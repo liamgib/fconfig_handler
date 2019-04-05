@@ -60,15 +60,26 @@ module.exports = function main(name, values, config){
   }
 }
 
+/**
+ * This function will return the current error code if a recent error occured.
+ * @returns {number} Returns the current error code if any, else false.
+ */
 module.exports.getErrorCode = function getErrorCode(){
   return error_code;
 }
 
+/**
+ * This function will clear all error codes and allow the system to continue running.
+ * Should be unlikely to occur.
+ */
 module.exports.clearErrorCode = function clearErrorCode(){
   error_code = false;
   return module.exports;
 }
 
+/**
+ * The function will clear the current data saved in memory.
+ */
 module.exports.save = function save(){
   let processed_data = {};
   let i = 0;
@@ -87,19 +98,18 @@ module.exports.save = function save(){
   }
 }
 
-module.exports.forceReload = function forceReload(){
-  if(isAllowedToRun()){
-    return module.exports;
-  }else{
-    error("unable to run function - please check getErrorCode() or reset with clearErrorCode()")
-    return module.exports;
-  }
-}
-
+/**
+ * This function will return the full filename.
+ * @returns {string} The full filename with .type on the end.
+ */
 module.exports.getFullFilename = function getFullFilename(){
   return filename + "." + type;
 }
 
+/**
+ * This function will check if the associative data file exists.
+ * @returns {boolean} if the data file exists.
+ */
 module.exports.doesExists = function doesExists(){
   try {
     return fs.existsSync(module.exports.getFullFilename());
@@ -108,6 +118,11 @@ module.exports.doesExists = function doesExists(){
   }
 };
 
+/**
+ * The function re-iterats through variables and asks the user for the input.
+ * It contains an internal function.
+ * @returns {boolean} Will return true when complete.
+ */
 module.exports.getUserInputs = async function getUserInput(){
   i = 0;
   function getInput(){
