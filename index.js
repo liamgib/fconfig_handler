@@ -5,9 +5,13 @@ const filetypes = ["json"];
 let logErrors = true;
 let allowCreation = true;
 
+
 //Global variables
 let filename, type;
 let error_code = false;
+function isAllowedToRun(){
+  return !error_code ? true : false;
+}
 
 
 /**
@@ -61,9 +65,6 @@ module.exports = function main(name, values, config){
   }
 }
 
-module.exports.newConfigData = function newConfigData(){
-  return new require("./configInstance");
-};
 
 
 module.exports.getErrorCode = function getErrorCode(){
@@ -75,19 +76,38 @@ module.exports.clearErrorCode = function clearErrorCode(){
   return module.exports;
 }
 
-module.exports.saveFile = function saveFile(){
-  fs.writeFileSync(filename, JSON.stringify(data, null, 2));
+module.exports.save = function save(){
+  if(isAllowedToRun()){
+    fs.writeFileSync(getFullFilename(), JSON.stringify({"data": 2}, null, 2));
+    return module.exports;
+  }else{
+    error("unable to run function - please check getErrorCode()")
+    return module.exports;
+  }
+}
+
+module.exports.forceReload = function forceReload(){
+  if(isAllowedToRun()){
+    loadData();
+    return module.exports;
+  }else{
+    error("unable to run function - please check getErrorCode() or reset with clearErrorCode()")
+    return module.exports;
+  }
 }
 
 function loadData(){
   try {
-  let loaded_file = JSON.parse(fs.readFileSync(filename, 'utf8'));
+  let loaded_file = JSON.parse(fs.readFileSync(getFullFilename(), 'utf8'));
     return loaded_file
   } catch(e){
     return null;
   }
 };
 
+function getFullFilename(){
+  return filename + "." + type;
+}
 function error(...message){
   if(logErrors) console.log('[fconfig_handler] ' + message);
 }
