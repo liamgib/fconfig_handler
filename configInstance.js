@@ -3,7 +3,7 @@ var rl = readline.createInterface(process.stdin, process.stdout);
 const jsonData = require("read-write-json");
 let currentData = {};
 
-module.exports.get = (displayName, attribute) => {
+module.exports.get = function(displayName, attribute){
   return new Promise((resolve, reject) => {
     rl.setPrompt("Enter the " + displayName + ": ");
     rl.prompt();
@@ -16,7 +16,7 @@ module.exports.get = (displayName, attribute) => {
   });
 };
 
-module.exports.saveData = fileName => {
+module.exports.saveData =  function(fileName){
   jsonData.writeJSONFile(fileName, currentData);
   console.log("Configuration file saved: " + fileName);
 };
