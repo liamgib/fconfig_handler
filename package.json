@@ -1,9 +1,14 @@
 {
   "name": "fconfig_handler",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A package that handles configuration data that is sensitive for github or varies across server instances.",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "babel": {
+    "presets": ["es2015", "stage-2"]
+  },
   "scripts": {
+    "prebuild": "rimraf dist",
+    "build": "babel --copy-files --out-dir dist --ignore *.test.js src",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -28,5 +33,11 @@
   "dependencies": {
     "read-write-json": "^1.0.5",
     "readline": "^1.3.0"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-stage-2": "^6.24.1",
+    "rimraf": "^2.6.3"
   }
 }

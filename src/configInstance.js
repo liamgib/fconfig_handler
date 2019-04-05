@@ -21,6 +21,3 @@ module.exports.saveData = fileName => {
   console.log("Configuration file saved: " + fileName);
 };
 
-function getThis() {
-  return this;
-}
