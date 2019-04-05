@@ -1,9 +1,9 @@
 const fs = require('fs');
+const readline = require("readline");
 const filetypes = ["json"];
 
 //Configuration
 let logErrors = true;
-let allowCreation = true;
 
 
 //Global variables
@@ -13,6 +13,8 @@ function isAllowedToRun(){
   return !error_code ? true : false;
 }
 
+//Data
+let data = {};
 
 /**
  * This is the primary function when this instance is created.
@@ -40,19 +42,12 @@ module.exports = function main(name, values, config){
       if(config["error_logs"] == false){
         logErrors = false;
       }
-      if(config["allowCreation"] == false){
-        allowCreation = false;
-      }
     } else if(typeof config !== 'undefined') throw 'expected_object';
 
     //Process payload
     if(typeof values ==='object'){
-      let file_existing = loadData();
-      if(file_existing == null){
-        if(!allowCreation) throw 'file_does_not_exist';
-      };
+      return module.exports.doesExists();
     } else throw 'expected_object';
-    return module.exports;
   } catch(e) {
     if(e === 'expected_object') error("expected variable type Object.");
     if(e === 'expected_string') error("expected variable type String.");
@@ -60,7 +55,6 @@ module.exports = function main(name, values, config){
     if(e === 'invalid_filetype') error("unexpected filetype provided.");
     if(e === 'file_does_not_exist') error("the file doesn't exist and allowCreation is set to false.");
     error_code = e;
-
     return module.exports;
   }
 }
@@ -96,18 +90,38 @@ module.exports.forceReload = function forceReload(){
   }
 }
 
-function loadData(){
+module.exports.getFullFilename = function getFullFilename(){
+  return filename + "." + type;
+}
+
+module.exports.doesExists = function doesExists(){
   try {
-  let loaded_file = JSON.parse(fs.readFileSync(getFullFilename(), 'utf8'));
-    return loaded_file
+    return fs.existsSync(module.exorts.getFullFilename());
   } catch(e){
-    return null;
+    return false;
   }
 };
 
-function getFullFilename(){
-  return filename + "." + type;
+async function getUserInput(variable, options){
+  let display = variable;
+  if(options["display"] !== undefined){
+    display = options["display"];
+  }
+
+  var rl = readline.createInterface(process.stdin, process.stdout);
+  rl.setPrompt("Enter the " + display + ": ");
+    rl.prompt();
+    rl.on("line", lineData => {
+      rl.close();
+      rl = readline.createInterface(process.stdin, process.stdout);
+      data[variable]["value"] = lineData
+      return true;
+    });
 }
+
+
+
+
 function error(...message){
   if(logErrors) console.log('[fconfig_handler] ' + message);
 }
