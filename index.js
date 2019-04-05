@@ -46,7 +46,8 @@ module.exports = function main(name, values, config){
 
     //Process payload
     if(typeof values ==='object'){
-      return module.exports.doesExists();
+      data = values;
+      return module.exports;
     } else throw 'expected_object';
   } catch(e) {
     if(e === 'expected_object') error("expected variable type Object.");
@@ -58,8 +59,6 @@ module.exports = function main(name, values, config){
     return module.exports;
   }
 }
-
-
 
 module.exports.getErrorCode = function getErrorCode(){
   return error_code;
@@ -102,20 +101,30 @@ module.exports.doesExists = function doesExists(){
   }
 };
 
-async function getUserInput(variable, options){
-  let display = variable;
-  if(options["display"] !== undefined){
-    display = options["display"];
-  }
+module.exports.getUserInputs = async function getUserInputs(){
+  getUserInput(0, function(){
+    console.log(data);
+    return true;
+  });
+}
 
+async function getUserInput(i, callback){
+  let keys = Object.keys(data);
+  variable = keys[i];
+  options = data[variable];
+  let display = variable;
+  i++;
   var rl = readline.createInterface(process.stdin, process.stdout);
   rl.setPrompt("Enter the " + display + ": ");
     rl.prompt();
     rl.on("line", lineData => {
       rl.close();
-      rl = readline.createInterface(process.stdin, process.stdout);
       data[variable]["value"] = lineData
-      return true;
+      if(i == keys.length){
+        callback();
+      }else{
+        getUserInput(i, callback);
+      }
     });
 }
 
