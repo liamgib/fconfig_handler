@@ -70,18 +70,25 @@ module.exports.clearErrorCode = function clearErrorCode(){
 }
 
 module.exports.save = function save(){
-  if(isAllowedToRun()){
-    fs.writeFileSync(getFullFilename(), JSON.stringify({"data": 2}, null, 2));
-    return module.exports;
-  }else{
-    error("unable to run function - please check getErrorCode()")
-    return module.exports;
+  let processed_data = {};
+  let i = 0;
+  for(let value in data){
+    processed_data[value] = data[value]["value"];
+    i++;
+    if(i == Object.keys(data).length){
+      if(isAllowedToRun()){
+        fs.writeFileSync(module.exports.getFullFilename(), JSON.stringify(processed_data, null, 2));
+        return module.exports;
+      }else{
+        error("unable to run function - please check getErrorCode()")
+        return module.exports;
+      }
+    }
   }
 }
 
 module.exports.forceReload = function forceReload(){
   if(isAllowedToRun()){
-    loadData();
     return module.exports;
   }else{
     error("unable to run function - please check getErrorCode() or reset with clearErrorCode()")
@@ -95,40 +102,46 @@ module.exports.getFullFilename = function getFullFilename(){
 
 module.exports.doesExists = function doesExists(){
   try {
-    return fs.existsSync(module.exorts.getFullFilename());
+    return fs.existsSync(module.exports.getFullFilename());
   } catch(e){
     return false;
   }
 };
 
-module.exports.getUserInputs = async function getUserInputs(){
-  getUserInput(0, function(){
-    console.log(data);
-    return true;
-  });
-}
+module.exports.getUserInputs = async function getUserInput(){
+  i = 0;
+  function getInput(){
+    let keys = Object.keys(data);
+    variable = keys[i];
+    options = data[variable];
+    let display = variable;
+    let type = options["type"] == undefined ? "String" : (options["type"] == "String") ? "String" : "Integer";
 
-async function getUserInput(i, callback){
-  let keys = Object.keys(data);
-  variable = keys[i];
-  options = data[variable];
-  let display = variable;
-  i++;
-  var rl = readline.createInterface(process.stdin, process.stdout);
-  rl.setPrompt("Enter the " + display + ": ");
+    i++;
+    var rl = readline.createInterface(process.stdin, process.stdout);
+    rl.setPrompt("Enter the " + display + ": ");
     rl.prompt();
     rl.on("line", lineData => {
       rl.close();
-      data[variable]["value"] = lineData
-      if(i == keys.length){
-        callback();
+      //Check line input type.
+      if(type == "Integer" && !lineData.match("-?\\d+(\\.\\d+)?")){
+        i--;
+        console.log("Invalid input type, expected (" + type.toLowerCase() + ") - was given: (" + (typeof lineData) + ")");
+        getInput();
       }else{
-        getUserInput(i, callback);
+        
+        data[variable]["value"] = (type == "Integer") ? parseFloat(lineData) : lineData;
+        if(i == keys.length){
+          module.exports.save();
+          return true;
+        }else{
+          getInput();
+        }
       }
     });
+  }
+  return await getInput();
 }
-
-
 
 
 function error(...message){
