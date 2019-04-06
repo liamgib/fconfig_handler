@@ -1,7 +1,7 @@
 # fconfig_handler
 A lightweight config handler with a npm package interface.
 
-# Motivation
+## Motivation
 This project started as a simple little internal config handler used for various personal projects.
 After some refinement, this was packaged up and fconfig_handler was created. 
 
@@ -58,7 +58,7 @@ database_config.loadData().then(data => {
 #### Returns: 
 > { city: 'Brisbane', country: 'Australia', postcode: 4000 }
 
-### API Reference
+## API Reference
 All accessible functions are defined below. 
 
 #### Init: 
@@ -122,7 +122,7 @@ Parameter - 'value'  The value to set the identifier, ie '2000'.
 This function will set the value of the given identifier. 
 If 'save' is true the file will be saved afterwards.
 
-### Errors
+## Errors
 
 ##### 'load_data_error'
 The loaded data experienced an error. It is either corrupted or the syntax is invalid. Perhaps call getUserInput() to reask for values? Or use .setValue().
