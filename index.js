@@ -57,7 +57,6 @@ module.exports = function main(name, values, config){
     if(e === 'expected_string') error("expected variable type String.");
     if(e === 'invalid_filename') error("invalid file name provided.");
     if(e === 'invalid_filetype') error("unexpected filetype provided.");
-    if(e === 'file_does_not_exist') error("the file doesn't exist and allowCreation is set to false.");
     error_code = e;
     return module.exports;
   }
@@ -79,6 +78,27 @@ module.exports.clearErrorCode = function clearErrorCode(){
   error_code = false;
   return module.exports;
 }
+
+
+/**
+ * This function will return the full filename.
+ * @returns {string} The full filename with .type on the end.
+ */
+module.exports.getFullFilename = function getFullFilename(){
+  return filename + "." + type;
+}
+
+/**
+ * This function will check if the associative data file exists.
+ * @returns {boolean} if the data file exists.
+ */
+module.exports.doesExists = function doesExists(){
+  try {
+    return fs.existsSync(module.exports.getFullFilename());
+  } catch(e){
+    return false;
+  }
+};
 
 /**
  * The function will clear the current data saved in memory.
@@ -102,24 +122,31 @@ module.exports.save = function save(){
 }
 
 /**
- * This function will return the full filename.
- * @returns {string} The full filename with .type on the end.
+ * Load data from file or ask for user input if allowCreation is set to true or override set to true.
+ * @returns {Object} Returns loaded data from file or user input.
  */
-module.exports.getFullFilename = function getFullFilename(){
-  return filename + "." + type;
+module.exports.loadData = async function(override=false){
+  if(!module.exports.doesExists() && (allowCreation || override)){
+    module.exports.getUserInputs().then(function(){
+      return data;
+    });
+  }else{
+    try{
+    let loaded_data = JSON.parse(fs.readFileSync(module.exports.getFullFilename(), 'utf8'));
+    let i = 0;
+    for(let value in loaded_data){
+      i++;
+      data[value]["value"] = loaded_data[value];
+      if(Object.keys(loaded_data).length == i){
+        return loaded_data;
+      }
+    }
+    }catch(e){
+      return 'load_data_error';
+    }
+  }
 }
 
-/**
- * This function will check if the associative data file exists.
- * @returns {boolean} if the data file exists.
- */
-module.exports.doesExists = function doesExists(){
-  try {
-    return fs.existsSync(module.exports.getFullFilename());
-  } catch(e){
-    return false;
-  }
-};
 
 /**
  * The function re-iterats through variables and asks the user for the input.
@@ -162,29 +189,31 @@ module.exports.getUserInputs = async function getUserInput(){
 }
 
 /**
- * Load data from file or ask for user input if allowCreation is set to true or override set to true.
- * @returns {Object} Returns loaded data from file or user input.
+ * Used to retrieve the current data in the memory_pool.
+ * Call .save() to save it to the file.
+ * @returns {Object} Loaded data in memory pool
  */
-module.exports.loadData = async function(override=false){
-  if(!module.exports.doesExists() && (allowCreation || override)){
-    module.exports.getUserInputs().then(function(){
-      return data;
-    });
-  }else{
-    try{
-    let loaded_data = JSON.parse(fs.readFileSync(module.exports.getFullFilename(), 'utf8'));
-    let i = 0;
-    for(let value in loaded_data){
-      i++;
-      data[value]["value"] = loaded_data[value];
-      if(Object.keys(loaded_data).length == i){
-        return loaded_data;
-      }
-    }
-    }catch(e){
-      return 'load_data_error';
+module.exports.getData = function getData(){
+  let processed_data = {};
+  let i = 0;
+  for(let value in data){
+    processed_data[value] = data[value]["value"];
+    i++;
+    if(i == Object.keys(data).length){
+      return processed_data;
     }
   }
+}
+
+/**
+ * Used to set value of an identifier.
+ * @param {string} identifier The identifier to update, ie 'postcode'.
+ * @param value The value to set the identifier, ie '2000'.
+ * @param {Object=} save (Optional) If true, the file will be saved automatically.
+ */
+module.exports.setValue = function setValue(identifier, value, save=true){
+  data[identifier]["value"] = value;
+  if(save) module.exports.save();
 }
 
 function error(...message){

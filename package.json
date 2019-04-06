@@ -1,6 +1,6 @@
 {
   "name": "fconfig_handler",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "A package that handles configuration data that is sensitive for github or varies across server instances.",
   "main": "index.js",
   "scripts": {
