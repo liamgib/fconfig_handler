@@ -4,7 +4,7 @@ const filetypes = ["json"];
 
 //Configuration
 let logErrors = true;
-
+let allowCreation = true;
 
 //Global variables
 let filename, type;
@@ -41,6 +41,9 @@ module.exports = function main(name, values, config){
     if(typeof config === 'object'){
       if(config["error_logs"] == false){
         logErrors = false;
+      }
+      if(config["allowCreation"] == false){
+        allowCreation = false;
       }
     } else if(typeof config !== 'undefined') throw 'expected_object';
 
@@ -121,7 +124,7 @@ module.exports.doesExists = function doesExists(){
 /**
  * The function re-iterats through variables and asks the user for the input.
  * It contains an internal function.
- * @returns {boolean} Will return true when complete.
+ * @returns {Promise} Will resolve true when complete.
  */
 module.exports.getUserInputs = async function getUserInput(){
   i = 0;
@@ -158,6 +161,31 @@ module.exports.getUserInputs = async function getUserInput(){
   return await getInput();
 }
 
+/**
+ * Load data from file or ask for user input if allowCreation is set to true or override set to true.
+ * @returns {Object} Returns loaded data from file or user input.
+ */
+module.exports.loadData = async function(override=false){
+  if(!module.exports.doesExists() && (allowCreation || override)){
+    module.exports.getUserInputs().then(function(){
+      return data;
+    });
+  }else{
+    try{
+    let loaded_data = JSON.parse(fs.readFileSync(module.exports.getFullFilename(), 'utf8'));
+    let i = 0;
+    for(let value in loaded_data){
+      i++;
+      data[value]["value"] = loaded_data[value];
+      if(Object.keys(loaded_data).length == i){
+        return loaded_data;
+      }
+    }
+    }catch(e){
+      return 'load_data_error';
+    }
+  }
+}
 
 function error(...message){
   if(logErrors) console.log('[fconfig_handler] ' + message);

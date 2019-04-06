@@ -11,10 +11,11 @@ It will ask the user to enter the values if the 'server_location.json' file does
 ```javascript
 const fconfig_handler = require("fconfig_handler");
 
+//Payload
 let payload = {
     "city": { display:"City name"}, 
     "country": { display:"Country name"}, 
-    "postcode": {type: "Integer"}
+    "postcode": { display:"postcode", type: "Integer"}
 };
 
 //Default config values
@@ -23,8 +24,12 @@ let config = {
     allowCreation: true
 }
 
-let database_config = fconfig_handler("server_location.json", payload, config);
-if(!database_config.doesExists()){
-    database_config.getUserInputs();
-}
+//Define config instance
+let database_config = fconfig_handler("MySQL_database", payload, config);
+
+//Load data - if file doesn't exist create file based on allowCreation config or override variable.
+database_config.loadData().then(data => {
+    console.log(data);
+});
+
 ```
